@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desktop OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .hidden {
+            display: none !important;
+        }
+
+        .desktop {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .window {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            min-width: 320px;
+            min-height: 450px;
+            resize: both;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            left: 100px;
+            top: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .window-header {
+            background: rgba(241, 245, 249, 0.9);
+            padding: 0.75rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            cursor: move;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #dc2626;
+        }
+
+        .window-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .calculator {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            flex: 1;
+        }
+
+        .calculator-display {
+            width: 100%;
+            padding: 1.25rem;
+            font-size: 1.75rem;
+            text-align: right;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .calculator-display:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .calculator-button {
+            padding: 1rem;
+            font-size: 1.25rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            height: 100%;
+        }
+
+        .calculator-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .calculator-button:active {
+            transform: translateY(0);
+        }
+
+        .number {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .number:hover {
+            background: #e2e8f0;
+        }
+
+        .operator {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .operator:hover {
+            background: #2563eb;
+        }
+
+        .equals {
+            background: #10b981;
+            color: white;
+        }
+
+        .equals:hover {
+            background: #059669;
+        }
+
+        .clear {
+            background: #ef4444;
+            color: white;
+            grid-column: span 4;
+            font-weight: 600;
+        }
+
+        .clear:hover {
+            background: #dc2626;
+        }
+
+        /* Desktop icon styling */
+        .app-icon {
+            transition: all 0.2s;
+        }
+
+        .app-icon:hover {
+            transform: translateY(-2px);
+        }
+
+        .app-icon:active {
+            transform: translateY(0);
+        }
+
+        .app-icon > div {
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .app-icon:hover > div {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <!-- Desktop Icons -->
+        <div class="p-4 grid grid-cols-6 gap-4">
+            <div class="app-icon text-center cursor-pointer" data-app="calculator">
+                <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 w-24 h-24 flex flex-col items-center justify-center">
+                    <i class="fas fa-calculator text-3xl text-white"></i>
+                    <p class="text-white mt-2">Calculator</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculator Window -->
+        <div id="calculator-window" class="window hidden">
+            <div class="window-header">
+                <i class="fas fa-calculator"></i>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="window-content">
+                <div class="calculator">
+                    <input type="text" class="calculator-display" readonly>
+                    <div class="calculator-grid">
+                        <button class="calculator-button number">7</button>
+                        <button class="calculator-button number">8</button>
+                        <button class="calculator-button number">9</button>
+                        <button class="calculator-button operator">/</button>
+                        <button class="calculator-button number">4</button>
+                        <button class="calculator-button number">5</button>
+                        <button class="calculator-button number">6</button>
+                        <button class="calculator-button operator">*</button>
+                        <button class="calculator-button number">1</button>
+                        <button class="calculator-button number">2</button>
+                        <button class="calculator-button number">3</button>
+                        <button class="calculator-button operator">-</button>
+                        <button class="calculator-button number">0</button>
+                        <button class="calculator-button number">.</button>
+                        <button class="calculator-button equals">=</button>
+                        <button class="calculator-button operator">+</button>
+                        <button class="calculator-button clear">C</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class WindowManager {
+            constructor() {
+                this.windows = new Map();
+                this.zIndex = 1000;
+                this.initializeAppIcons();
+            }
+
+            initializeAppIcons() {
+                document.querySelectorAll('.app-icon').forEach(icon => {
+                    icon.addEventListener('click', () => {
+                        const appName = icon.dataset.app;
+                        this.openWindow(appName);
+                    });
+                });
+            }
+
+            openWindow(appName) {
+                const windowElement = document.getElementById(`${appName}-window`);
+                if (windowElement) {
+                    windowElement.classList.remove('hidden');
+                    this.setupWindowControls(windowElement);
+                    this.bringToFront(windowElement);
+                }
+            }
+
+            setupWindowControls(windowElement) {
+                if (this.windows.has(windowElement)) return;
+
+                const header = windowElement.querySelector('.window-header');
+                this.setupDragging(windowElement, header);
+
+                const closeBtn = windowElement.querySelector('.close-btn');
+                closeBtn.addEventListener('click', () => {
+                    windowElement.classList.add('hidden');
+                });
+
+                windowElement.addEventListener('mousedown', () => {
+                    this.bringToFront(windowElement);
+                });
+
+                this.windows.set(windowElement, true);
+            }
+
+            setupDragging(windowElement, header) {
+                let isDragging = false;
+                let currentX;
+                let currentY;
+                let initialX;
+                let initialY;
+
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    initialX = e.clientX - windowElement.offsetLeft;
+                    initialY = e.clientY - windowElement.offsetTop;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        e.preventDefault();
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                        windowElement.style.left = `${currentX}px`;
+                        windowElement.style.top = `${currentY}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+
+            bringToFront(windowElement) {
+                this.zIndex += 1;
+                windowElement.style.zIndex = this.zIndex;
+            }
+        }
+
+        class Calculator {
+            constructor() {
+                this.display = document.querySelector('.calculator-display');
+                this.currentValue = '';
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.calculator-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.textContent;
+                        this.handleInput(value);
+                    });
+                });
+            }
+
+            handleInput(value) {
+                switch(value) {
+                    case 'C':
+                        this.currentValue = '';
+                        break;
+                    case '=':
+                        try {
+                            this.currentValue = eval(this.currentValue).toString();
+                        } catch (e) {
+                            this.currentValue = 'Error';
+                        }
+                        break;
+                    default:
+                        this.currentValue += value;
+                }
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                this.display.value = this.currentValue;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const windowManager = new WindowManager();
+            const calculator = new Calculator();
+        });
+    </script>
+</body>
+</html>
